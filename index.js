@@ -3,6 +3,8 @@ import { PdfReader } from "pdfreader";
 import * as cheerio from 'cheerio';
 import axios from "axios";
 import { DateTime } from "luxon";
+import 'dotenv/config'
+import TelegramBot from "node-telegram-bot-api";
 
 async function parse(buffer){
     return new Promise((resolve, reject) => {
@@ -66,4 +68,9 @@ async function fetchDividendCumDates(from, to){
 
 (async function(){
     const cumDates = await fetchDividendCumDates(process.argv[2], process.argv[3])
+    const message = "Dividend: \n" + Object.keys(cumDates).map(ticker => `${ticker} ${cumDates[ticker]}`).join("\n")
+    const token = process.env.TELEGRAM_BOT_TOKEN
+    const chatId = process.env.CHAT_ID
+    const bot = new TelegramBot(token)
+    bot.sendMessage(chatId, message)
 })()
