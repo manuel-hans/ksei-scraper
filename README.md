@@ -11,13 +11,13 @@ npm install
 
 ## Usage
 1. Duplicate `.env.example` file into `.env`
-2. Use command below to run the script. Modify `<from_date>` and `<to_date>` with the correct date. The date format should follow Indonesian format in ksei website.
+2. Use command below to run the script. Modify `<number_of_days>`.
 ```bash
-node index "<from_date>" "<to_date>"
+node index <number_of_days>
 ```
-Example: 
+Example for 7 days: 
 ```bash
-node index "31 Mei 2023" "31 Mei 2023"
+node index 7
 ```
 
 ## License
