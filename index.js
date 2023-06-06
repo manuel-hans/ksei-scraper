@@ -30,36 +30,40 @@ async function getCumDate(buffer){
 
 async function fetchDividendCumDates(from, to){
     let response = await axios.get("https://www.ksei.co.id/publications/corporate-action-schedules/cash-dividend?Month=05&Year=2023")
-    // console.log(response.data)
+
     const $ = cheerio.load(response.data)
     const date1 = DateTime.fromFormat(from, "dd MMMM yyyy", { locale: "id" })
     const date2 = DateTime.fromFormat(to, "dd MMMM yyyy", { locale: "id" })
 
     const output = {}
-    $(".table tbody tr").each(async function(){
-        const pdfLocation = "https://www.ksei.co.id"+ $(this).find("td:nth-child(1) a").prop("href");
-        const title = $(this).find("td:nth-child(2)").text();
+    const tr = $(".table tbody tr")
+    for (let i = 0; i < tr.length; i++) {
+        const row = tr[i];
+
+        const pdfLocation = "https://www.ksei.co.id"+ $(row).find("td:nth-child(1) a").prop("href")
+        const title = $(row).find("td:nth-child(2)").text()
         const emiten = title.match(/\(([^)]+)\)/)[1]
-        const datePublished = $(this).find("td:nth-child(3)").text();
+        const datePublished = $(row).find("td:nth-child(3)").text()
         const parsedDate = DateTime.fromFormat(datePublished, "dd MMMM yyyy", { locale: "id" })
 
         if(!title.startsWith("Jadwal Pelaksanaan") || parsedDate < date1 || parsedDate > date2){
-            return
+            continue
         }
         const pdfResponse = await axios.get(pdfLocation, {responseType: "arraybuffer"})
         // console.log(pdfLocation);
         const buffer = Buffer.from(pdfResponse.data, 'binary')
         const cumDate = await getCumDate(buffer)
         if(!cumDate){
-            return
+            continue
         }
 
         output[emiten] = cumDate
-    })
 
+    }
+    
     return output
 }
 
 (async function(){
-    const cumDates = fetchDividendCumDates(process.argv[2], process.argv[3])
+    const cumDates = await fetchDividendCumDates(process.argv[2], process.argv[3])
 })()
