@@ -31,11 +31,11 @@ async function getCumDate(buffer){
 }
 
 async function fetchDividendCumDates(from, to){
-    let response = await axios.get("https://www.ksei.co.id/publications/corporate-action-schedules/cash-dividend?Month=05&Year=2023")
+    let response = await axios.get("https://www.ksei.co.id/publications/corporate-action-schedules/cash-dividend")
 
     const $ = cheerio.load(response.data)
-    const date1 = DateTime.fromFormat(from, "dd MMMM yyyy", { locale: "id" })
-    const date2 = DateTime.fromFormat(to, "dd MMMM yyyy", { locale: "id" })
+    const date1 = DateTime.fromISO(from)
+    const date2 = DateTime.fromISO(to)
 
     const output = {}
     const tr = $(".table tbody tr")
@@ -67,7 +67,10 @@ async function fetchDividendCumDates(from, to){
 }
 
 (async function(){
-    const cumDates = await fetchDividendCumDates(process.argv[2], process.argv[3])
+    const to = DateTime.now()
+    const from = to.minus({days: process.argv[2]})
+    
+    const cumDates = await fetchDividendCumDates(from, to)
     const message = "Dividend: \n" + Object.keys(cumDates).map(ticker => `${ticker} ${cumDates[ticker]}`).join("\n")
     const token = process.env.TELEGRAM_BOT_TOKEN
     const chatId = process.env.CHAT_ID
