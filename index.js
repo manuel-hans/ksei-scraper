@@ -5,6 +5,7 @@ import axios from "axios";
 import { DateTime } from "luxon";
 import 'dotenv/config'
 import TelegramBot from "node-telegram-bot-api";
+import _ from "lodash";
 
 async function parse(buffer){
     return new Promise((resolve, reject) => {
@@ -44,7 +45,7 @@ async function fetchDividendCumDates(from, to){
 
         const pdfLocation = "https://www.ksei.co.id"+ $(row).find("td:nth-child(1) a").prop("href")
         const title = $(row).find("td:nth-child(2)").text()
-        const emiten = title.match(/\(([^)]+)\)/)[1]
+        const ticker = _.last(title.split('(')).split(")")[0]
         const datePublished = $(row).find("td:nth-child(3)").text()
         const parsedDate = DateTime.fromFormat(datePublished, "dd MMMM yyyy", { locale: "id" })
 
@@ -59,7 +60,7 @@ async function fetchDividendCumDates(from, to){
             continue
         }
 
-        output[emiten] = cumDate
+        output[ticker] = cumDate
 
     }
     
